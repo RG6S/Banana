@@ -1,0 +1,8 @@
+PRINT(print)
+LPAREN(()
+ID(x)
+PLUS(+)
+NUMBER(10)
+RPAREN())
+SEMICOLON(;)
+EOF()

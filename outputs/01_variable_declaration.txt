@@ -1,0 +1,6 @@
+LET(let)
+ID(x)
+ASSIGN(=)
+NUMBER(10)
+SEMICOLON(;)
+EOF()
