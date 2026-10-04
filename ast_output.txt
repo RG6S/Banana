@@ -1,0 +1,87 @@
+============================================================
+Example 1: operator precedence
+------------------------------------------------------------
+Source:
+print 2 + 3 * 4;
+ 
+Tokens:
+PRINT(print) NUMBER(2) PLUS(+) NUMBER(3) STAR(*) NUMBER(4) SEMICOLON(;) EOF()
+ 
+AST:
+ProgramNode
+└── PrintNode
+    └── BinaryOpNode(+)
+        ├── NumberNode(2)
+        └── BinaryOpNode(*)
+            ├── NumberNode(3)
+            └── NumberNode(4)
+ 
+S-expression: (program (print (+ 2 (* 3 4))))
+ 
+============================================================
+Example 2: parentheses and unary minus
+------------------------------------------------------------
+Source:
+let x = (2 + 3) * -4;
+print x;
+ 
+Tokens:
+LET(let) ID(x) ASSIGN(=) LPAREN(() NUMBER(2) PLUS(+) NUMBER(3) RPAREN()) STAR(*) MINUS(-) NUMBER(4) SEMICOLON(;) PRINT(print) ID(x) SEMICOLON(;) EOF()
+ 
+AST:
+ProgramNode
+├── AssignmentNode(let x =)
+│   └── BinaryOpNode(*)
+│       ├── BinaryOpNode(+)
+│       │   ├── NumberNode(2)
+│       │   └── NumberNode(3)
+│       └── UnaryOpNode(-)
+│           └── NumberNode(4)
+└── PrintNode
+    └── VariableNode(x)
+ 
+S-expression: (program (let= x (* (+ 2 3) (neg 4))) (print x))
+ 
+============================================================
+Example 3: multiple statements, reassignment, compound assignment
+------------------------------------------------------------
+Source:
+let total = 10;
+total += 5 * 2;
+total = total - 1;
+print total / 3;
+ 
+Tokens:
+LET(let) ID(total) ASSIGN(=) NUMBER(10) SEMICOLON(;) ID(total) PLUS_ASSIGN(+=) NUMBER(5) STAR(*) NUMBER(2) SEMICOLON(;) ID(total) ASSIGN(=) ID(total) MINUS(-) NUMBER(1) SEMICOLON(;) PRINT(print) ID(total) SLASH(/) NUMBER(3) SEMICOLON(;) EOF()
+ 
+AST:
+ProgramNode
+├── AssignmentNode(let total =)
+│   └── NumberNode(10)
+├── AssignmentNode(total +=)
+│   └── BinaryOpNode(*)
+│       ├── NumberNode(5)
+│       └── NumberNode(2)
+├── AssignmentNode(total =)
+│   └── BinaryOpNode(-)
+│       ├── VariableNode(total)
+│       └── NumberNode(1)
+└── PrintNode
+    └── BinaryOpNode(/)
+        ├── VariableNode(total)
+        └── NumberNode(3)
+ 
+S-expression: (program (let= total 10) (+= total (* 5 2)) (= total (- total 1)) (print (/ total 3)))
+ 
+============================================================
+Syntax error examples
+------------------------------------------------------------
+Source: 'let x = ;'
+  -> Syntax error at line 1, column 9: expected an expression but found ';'
+ 
+Source: 'print (1 + 2;'
+  -> Syntax error at line 1, column 13: expected ')' to close the '(' but found ';'
+ 
+Source: 'let x = 5\nprint x;'
+  -> Syntax error at line 2, column 1: expected ';' at the end of the statement but found 'print'
+ 

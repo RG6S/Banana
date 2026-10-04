@@ -1,0 +1,20 @@
+## AI use
+
+**AI assistance used:** Claude (Anthropic) was used to draft the parser,
+AST nodes, grammar, tests, demo script, and this README, based on the
+assignment text and the group's lexer.
+
+## AI Suggestion we verified:
+Our group used AI during this project to help us understand how to
+build the parser, especially recursive-descent parsing, operator precedence,
+AST nodes, and syntax error handling We also used it to review some of our code,
+tests, grammar, and README. One suggestion from AI was to separate the parser
+into functions for expressions, terms, unary expressions, and primary expressions.
+We did not use the suggestion exactly as it was given. We changed parts of it to fit
+our lexer and AST design, and then tested it with different examples. For example, we
+tested 2 + 3 * 4 to make sure multiplication was handled before addition and that 
+the AST was correct. We also tested variables, assignments, print statements,
+parentheses, multiple statements, and invalid syntax. Our parser passed all 22 tests.
+Using AI helped us understand the parser better, but we learned that we still need to
+check and test AI suggestions ourselves because not every suggestion will work correctly
+with our project.
