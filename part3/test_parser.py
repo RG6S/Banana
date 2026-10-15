@@ -109,7 +109,8 @@ class SyntaxErrorTests(unittest.TestCase):
 
     def test_unsupported_keyword_gives_clear_message(self):
         with self.assertRaises(ParserError) as ctx:
-            parse("while x { }")
+                    parse("func test() { }")
+
         self.assertIn("not supported", str(ctx.exception))
 
     def test_lexer_errors_still_propagate(self):

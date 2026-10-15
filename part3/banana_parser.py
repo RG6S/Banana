@@ -1,37 +1,42 @@
-"""Recursive-descent parser for Banana (Part 2): tokens -> AST.
 
-Grammar (see GRAMMAR.md):
-
-    program    = { statement } EOF ;
-    statement  = let_stmt | assign_stmt | print_stmt ;
-    let_stmt   = "let" ID "=" expression ";" ;
-    assign_stmt= ID assign_op expression ";" ;
-    print_stmt = "print" expression ";" ;
-    expression = term { ("+" | "-") term } ;
-    term       = unary { ("*" | "/") unary } ;
-    unary      = "-" unary | primary ;
-    primary    = NUMBER | ID | "(" expression ")" ;
-"""
+"""Recursive-descent parser for Banana Part 4."""
 
 from typing import List
 
-from ast_nodes import (AssignmentNode, BinaryOpNode, Node, NumberNode,
-                       PrintNode, ProgramNode, UnaryOpNode, VariableNode)
+from ast_nodes import (
+    AssignmentNode,
+    BinaryOpNode,
+    IfNode,
+    Node,
+    NumberNode,
+    PrintNode,
+    ProgramNode,
+    UnaryOpNode,
+    VariableNode,
+    WhileNode,
+)
 from lexer import Token, lex
 
-ASSIGN_OPERATORS = {"ASSIGN", "PLUS_ASSIGN", "MINUS_ASSIGN",
-                    "STAR_ASSIGN", "SLASH_ASSIGN"}
 
-# Valid Banana keywords whose syntax is not part of this assignment yet.
-NOT_YET_SUPPORTED = {"IF", "ELSE", "WHILE", "FUNC", "RETURN"}
+ASSIGN_OPERATORS = {
+    "ASSIGN",
+    "PLUS_ASSIGN",
+    "MINUS_ASSIGN",
+    "STAR_ASSIGN",
+    "SLASH_ASSIGN",
+}
+
+COMPARISON_OPERATORS = {"EQ", "NE", "LT", "GT", "LE", "GE"}
 
 
 class ParserError(Exception):
     """Raised when the token stream does not match the grammar."""
 
     def __init__(self, message: str, token: Token):
-        super().__init__(f"Syntax error at line {token.line}, "
-                         f"column {token.column}: {message}")
+        super().__init__(
+            f"Syntax error at line {token.line}, "
+            f"column {token.column}: {message}"
+        )
         self.message = message
         self.line = token.line
         self.column = token.column
@@ -49,7 +54,6 @@ class Parser:
         self.tokens = tokens
         self.pos = 0
 
-    # ---- token helpers -------------------------------------------------
     def peek(self) -> Token:
         return self.tokens[self.pos]
 
@@ -65,92 +69,192 @@ class Parser:
     def expect(self, token_type: str, what: str) -> Token:
         if self.check(token_type):
             return self.advance()
-        raise ParserError(f"expected {what} but found {describe(self.peek())}",
-                          self.peek())
 
-    # ---- grammar rules -------------------------------------------------
+        raise ParserError(
+            f"expected {what} but found {describe(self.peek())}",
+            self.peek(),
+        )
+
     def parse_program(self) -> ProgramNode:
         statements = []
+
         while not self.check("EOF"):
             statements.append(self.statement())
+
         return ProgramNode(statements)
 
     def statement(self) -> Node:
         token = self.peek()
+
         if token.type == "LET":
             return self.let_statement()
+
         if token.type == "PRINT":
             return self.print_statement()
+
         if token.type == "ID":
             return self.assignment_statement()
-        if token.type in NOT_YET_SUPPORTED:
+
+        if token.type == "IF":
+            return self.if_statement()
+
+        if token.type == "WHILE":
+            return self.while_statement()
+
+        if token.type in {"ELSE", "FUNC", "RETURN"}:
             raise ParserError(
-                f"'{token.lexeme}' statements are not supported by the "
-                f"parser yet", token)
+                f"'{token.lexeme}' is not supported here",
+                token,
+            )
+
         raise ParserError(
-            f"expected a statement but found {describe(token)}", token)
+            f"expected a statement but found {describe(token)}",
+            token,
+        )
 
     def let_statement(self) -> AssignmentNode:
-        self.advance()  # let
+        self.advance()
         name = self.expect("ID", "a variable name after 'let'")
         self.expect("ASSIGN", "'=' after the variable name")
         value = self.expression()
         self.expect("SEMICOLON", "';' at the end of the statement")
-        return AssignmentNode(name.lexeme, "=", value, is_declaration=True)
+
+        return AssignmentNode(
+            name.lexeme,
+            "=",
+            value,
+            is_declaration=True,
+        )
 
     def assignment_statement(self) -> AssignmentNode:
         name = self.advance()
+
         if not self.check(*ASSIGN_OPERATORS):
             raise ParserError(
                 f"expected '=' or a compound assignment operator after "
                 f"'{name.lexeme}' but found {describe(self.peek())}",
-                self.peek())
+                self.peek(),
+            )
+
         operator = self.advance()
         value = self.expression()
         self.expect("SEMICOLON", "';' at the end of the statement")
+
         return AssignmentNode(name.lexeme, operator.lexeme, value)
 
     def print_statement(self) -> PrintNode:
-        self.advance()  # print
+        self.advance()
         value = self.expression()
         self.expect("SEMICOLON", "';' at the end of the statement")
         return PrintNode(value)
 
+    def if_statement(self) -> IfNode:
+        self.advance()
+        condition = self.expression()
+        then_branch = self.block()
+        else_branch = []
+
+        if self.check("ELSE"):
+            self.advance()
+            else_branch = self.block()
+
+        return IfNode(condition, then_branch, else_branch)
+
+    def while_statement(self) -> WhileNode:
+        self.advance()
+        condition = self.expression()
+        body = self.block()
+        return WhileNode(condition, body)
+
+    def block(self) -> List[Node]:
+        self.expect("LBRACE", "'{' to begin a block")
+        statements = []
+
+        while not self.check("RBRACE", "EOF"):
+            statements.append(self.statement())
+
+        self.expect("RBRACE", "'}' to close a block")
+        return statements
+
     def expression(self) -> Node:
+        return self.comparison()
+
+    def comparison(self) -> Node:
         node = self.term()
-        while self.check("PLUS", "MINUS"):
+
+        if self.check(*COMPARISON_OPERATORS):
             operator = self.advance()
-            node = BinaryOpNode(operator.lexeme, node, self.term())
+            node = BinaryOpNode(
+                operator.lexeme,
+                node,
+                self.term(),
+            )
+
+            if self.check(*COMPARISON_OPERATORS):
+                raise ParserError(
+                    "chained comparisons are not supported",
+                    self.peek(),
+                )
+
         return node
 
     def term(self) -> Node:
+        node = self.factor()
+
+        while self.check("PLUS", "MINUS"):
+            operator = self.advance()
+            node = BinaryOpNode(
+                operator.lexeme,
+                node,
+                self.factor(),
+            )
+
+        return node
+
+    def factor(self) -> Node:
         node = self.unary()
+
         while self.check("STAR", "SLASH"):
             operator = self.advance()
-            node = BinaryOpNode(operator.lexeme, node, self.unary())
+            node = BinaryOpNode(
+                operator.lexeme,
+                node,
+                self.unary(),
+            )
+
         return node
 
     def unary(self) -> Node:
         if self.check("MINUS"):
             operator = self.advance()
-            return UnaryOpNode(operator.lexeme, self.unary())
+            return UnaryOpNode(
+                operator.lexeme,
+                self.unary(),
+            )
+
         return self.primary()
 
     def primary(self) -> Node:
         token = self.peek()
+
         if token.type == "NUMBER":
             self.advance()
             return NumberNode(int(token.lexeme))
+
         if token.type == "ID":
             self.advance()
             return VariableNode(token.lexeme)
+
         if token.type == "LPAREN":
             self.advance()
             node = self.expression()
             self.expect("RPAREN", "')' to close the '('")
             return node
+
         raise ParserError(
-            f"expected an expression but found {describe(token)}", token)
+            f"expected an expression but found {describe(token)}",
+            token,
+        )
 
 
 def parse_tokens(tokens: List[Token]) -> ProgramNode:
@@ -158,5 +262,5 @@ def parse_tokens(tokens: List[Token]) -> ProgramNode:
 
 
 def parse(source: str) -> ProgramNode:
-    """Lex and parse Banana source code. May raise LexerError/ParserError."""
+    """Lex and parse Banana source code."""
     return parse_tokens(lex(source))

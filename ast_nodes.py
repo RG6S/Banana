@@ -1,11 +1,11 @@
-"""AST node definitions for the Banana language (Part 2)."""
+"""AST node definitions for the Banana language (Part 4)."""
 
 from dataclasses import dataclass
 from typing import List
 
 
 class Node:
-    """Base class. Every node can describe itself and list its children."""
+    """Base class for all AST nodes."""
 
     def label(self) -> str:
         raise NotImplementedError
@@ -32,7 +32,7 @@ class VariableNode(Node):
 
 @dataclass(frozen=True)
 class UnaryOpNode(Node):
-    operator: str          # currently only "-"
+    operator: str
     operand: Node
 
     def label(self) -> str:
@@ -44,7 +44,7 @@ class UnaryOpNode(Node):
 
 @dataclass(frozen=True)
 class BinaryOpNode(Node):
-    operator: str          # "+", "-", "*", "/"
+    operator: str
     left: Node
     right: Node
 
@@ -57,14 +57,10 @@ class BinaryOpNode(Node):
 
 @dataclass(frozen=True)
 class AssignmentNode(Node):
-    """`let x = e;` (is_declaration=True), `x = e;`, or `x += e;` etc.
+    """Variable declaration, assignment, or compound assignment."""
 
-    Compound operators are kept as written in `operator` ("+=", "-=", ...)
-    rather than being rewritten into `x = x + e`. Desugaring can be done
-    later (e.g. in an interpreter or code generator) if the group prefers.
-    """
     name: str
-    operator: str          # "=", "+=", "-=", "*=", "/="
+    operator: str
     value: Node
     is_declaration: bool = False
 
@@ -88,6 +84,42 @@ class PrintNode(Node):
 
 
 @dataclass(frozen=True)
+class IfNode(Node):
+    """Conditional statement with then and optional else branches."""
+
+    condition: Node
+    then_branch: List[Node]
+    else_branch: List[Node]
+
+    def label(self) -> str:
+        return "IfNode"
+
+    def children(self) -> List[Node]:
+        return [
+            self.condition,
+            ProgramNode(self.then_branch),
+            ProgramNode(self.else_branch),
+        ]
+
+
+@dataclass(frozen=True)
+class WhileNode(Node):
+    """Loop that executes while its condition is true."""
+
+    condition: Node
+    body: List[Node]
+
+    def label(self) -> str:
+        return "WhileNode"
+
+    def children(self) -> List[Node]:
+        return [
+            self.condition,
+            ProgramNode(self.body),
+        ]
+
+
+@dataclass(frozen=True)
 class ProgramNode(Node):
     statements: List[Node]
 
@@ -100,35 +132,67 @@ class ProgramNode(Node):
 
 def format_tree(node: Node) -> str:
     """Pretty-print an AST as an indented tree."""
+
     lines = [node.label()]
 
     def walk(current: Node, prefix: str) -> None:
         kids = current.children()
+
         for index, kid in enumerate(kids):
             last = index == len(kids) - 1
-            lines.append(prefix + ("└── " if last else "├── ") + kid.label())
-            walk(kid, prefix + ("    " if last else "│   "))
+            branch = "└── " if last else "├── "
+            lines.append(prefix + branch + kid.label())
+
+            next_prefix = prefix + ("    " if last else "│   ")
+            walk(kid, next_prefix)
 
     walk(node, "")
     return "\n".join(lines)
 
 
 def to_sexpr(node: Node) -> str:
-    """Compact Lisp-style form, handy for tests: 2 + 3 * 4 -> (+ 2 (* 3 4))."""
+    """Convert an AST node into a compact Lisp-style representation."""
+
     if isinstance(node, NumberNode):
         return str(node.value)
+
     if isinstance(node, VariableNode):
         return node.name
+
     if isinstance(node, UnaryOpNode):
         return f"(neg {to_sexpr(node.operand)})"
+
     if isinstance(node, BinaryOpNode):
-        return (f"({node.operator} {to_sexpr(node.left)} "
-                f"{to_sexpr(node.right)})")
+        return (
+            f"({node.operator} {to_sexpr(node.left)} "
+            f"{to_sexpr(node.right)})"
+        )
+
     if isinstance(node, AssignmentNode):
-        head = f"let{node.operator}" if node.is_declaration else node.operator
+        head = (
+            f"let{node.operator}"
+            if node.is_declaration
+            else node.operator
+        )
         return f"({head} {node.name} {to_sexpr(node.value)})"
+
     if isinstance(node, PrintNode):
         return f"(print {to_sexpr(node.expression)})"
+
+    if isinstance(node, IfNode):
+        then_part = " ".join(to_sexpr(s) for s in node.then_branch)
+        else_part = " ".join(to_sexpr(s) for s in node.else_branch)
+        return (
+            f"(if {to_sexpr(node.condition)} "
+            f"(then {then_part}) (else {else_part}))"
+        )
+
+    if isinstance(node, WhileNode):
+        body = " ".join(to_sexpr(s) for s in node.body)
+        return f"(while {to_sexpr(node.condition)} (body {body}))"
+
     if isinstance(node, ProgramNode):
-        return "(program " + " ".join(to_sexpr(s) for s in node.statements) + ")"
+        statements = " ".join(to_sexpr(s) for s in node.statements)
+        return f"(program {statements})"
+
     raise TypeError(f"Unknown node type: {type(node).__name__}")
