@@ -23,7 +23,7 @@ while_stmt    = "while" , expression , block ;
 block         = "{" , { statement } , "}" ;
 
 expression    = comparison ;
-comparison    = additive , { comp_op , additive } ;
+comparison    = additive , [ comp_op , additive ] ;
 comp_op       = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
 
 additive      = term , { ( "+" | "-" ) , term } ;
@@ -58,5 +58,3 @@ primary       = NUMBER
 ## Not Yet Implemented
 
 Function declarations and return statements are recognized by the lexer but are not implemented as executable statements in the current interpreter.
-
-**Important:** This is a proposed updated grammar. Before submitting, we should verify that it matches the exact parser behavior—particularly whether chained comparisons are accepted and how comparison expressions are evaluated.

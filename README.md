@@ -20,7 +20,7 @@ Banana is a simple C-style programming language that our group is designing and 
 let x = 10;
 let y = 20;
 
-if x < y {
+if (x < y) {
     print x + y;
 } else {
     print 0;
