@@ -41,7 +41,7 @@ primary       = NUMBER
 | 2 | Unary - | Right |
 | 3 | *, / | Left |
 | 4 | +, - | Left |
-| 5 | ==, !=, <, >, <=, >= | Follow parser implementation |
+| 5 | ==, !=, <, >, <=, >= | Non-associative; one comparison per expression |
 
 ## Supported Features
 
@@ -54,6 +54,7 @@ primary       = NUMBER
 - if / else conditional statements
 - while loops
 - Runtime errors for undefined variables and division by zero
+- Integer numeric literals; division may produce decimal results
 
 ## Not Yet Implemented
 

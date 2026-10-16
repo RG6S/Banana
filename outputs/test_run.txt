@@ -85,3 +85,11 @@ Runtime error: Undefined variable 'x'
 Result: PASS
 
 Summary: All seven sample programs produced the expected output.
+
+Negative and Incomplete Test Case Notes
+
+- test6.banana is an intentional negative runtime test. It divides by zero and verifies that the interpreter reports "Runtime error: Division by zero" instead of crashing.
+- test7.banana is an intentional negative runtime test. It uses an undefined variable and verifies that the interpreter reports the variable name in a clear error message.
+- tests/cases/05_invalid_input.banana checks lexical error handling using an invalid character. The interpreter reports the error location without displaying a Python traceback.
+- Parser tests also include invalid syntax cases, such as a missing expression or closing parenthesis. These tests verify that syntax errors are reported clearly.
+- Function declarations and return statements can be recognized by the lexer, but they are not executable features in the current Part 4 interpreter. They are not considered passing interpreter functionality.

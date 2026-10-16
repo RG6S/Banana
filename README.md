@@ -15,6 +15,14 @@ Banana is a simple C-style programming language that our group is designing and 
 - Compound assignments: +=, -=, *=, /=
 - Error handling for undefined variables and division by zero
 
+
+## Current Limitations
+
+- Numeric literals are integers; division can produce decimal results.
+- Function declarations and return statements are recognized by the lexer but are not executable in the current interpreter.
+- The interpreter reports runtime errors for undefined variables and division by zero.
+
+
 ## Example
 
 let x = 10;
