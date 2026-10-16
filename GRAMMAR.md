@@ -1,65 +1,62 @@
-# Banana Grammar (Part 2)
+# Banana Grammar (Part 4)
 
 ## EBNF
 
-Notation: `{ x }` = zero or more, `[ x ]` = optional, `|` = choice,
-quoted text and UPPERCASE names are tokens from the lexer.
+Notation: { x } means zero or more, [ x ] means optional, and | means choice. Quoted text represents literal tokens.
 
-```ebnf
-program     = { statement } , EOF ;
+program        = { statement } , EOF ;
 
-statement   = let_stmt
-            | assign_stmt
-            | print_stmt ;
+statement      = let_stmt
+               | assign_stmt
+               | print_stmt
+               | if_stmt
+               | while_stmt ;
 
-let_stmt    = "let" , ID , "=" , expression , ";" ;
-assign_stmt = ID , assign_op , expression , ";" ;
-print_stmt  = "print" , expression , ";" ;
+let_stmt      = "let" , ID , "=" , expression , ";" ;
+assign_stmt   = ID , assign_op , expression , ";" ;
+print_stmt    = "print" , expression , ";" ;
 
-assign_op   = "=" | "+=" | "-=" | "*=" | "/=" ;
+assign_op     = "=" | "+=" | "-=" | "*=" | "/=" ;
 
-expression  = term , { ( "+" | "-" ) , term } ;
-term        = unary , { ( "*" | "/" ) , unary } ;
-unary       = "-" , unary
-            | primary ;
-primary     = NUMBER
-            | ID
-            | "(" , expression , ")" ;
-```
+if_stmt       = "if" , expression , block , [ "else" , block ] ;
+while_stmt    = "while" , expression , block ;
+block         = "{" , { statement } , "}" ;
 
-Each precedence level is its own rule, which is what makes `2 + 3 * 4`
-parse as `2 + (3 * 4)`. The `{ ... }` loops in `expression` and `term`
-make `+ - * /` left-associative: `10 - 4 - 3` is `(10 - 4) - 3`.
+expression    = comparison ;
+comparison    = additive , { comp_op , additive } ;
+comp_op       = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
 
-## BNF equivalent
+additive      = term , { ( "+" | "-" ) , term } ;
+term          = unary , { ( "*" | "/" ) , unary } ;
+unary         = "-" , unary | primary ;
+primary       = NUMBER
+              | ID
+              | "(" , expression , ")" ;
 
-```bnf
-<program>     ::= <statements> EOF
-<statements>  ::= <statement> <statements> | ""
-<statement>   ::= <let_stmt> | <assign_stmt> | <print_stmt>
-<let_stmt>    ::= "let" ID "=" <expression> ";"
-<assign_stmt> ::= ID <assign_op> <expression> ";"
-<print_stmt>  ::= "print" <expression> ";"
-<assign_op>   ::= "=" | "+=" | "-=" | "*=" | "/="
-<expression>  ::= <term> | <expression> "+" <term> | <expression> "-" <term>
-<term>        ::= <unary> | <term> "*" <unary> | <term> "/" <unary>
-<unary>       ::= "-" <unary> | <primary>
-<primary>     ::= NUMBER | ID | "(" <expression> ")"
-```
-
-## Precedence (highest to lowest)
+## Operator Precedence (Highest to Lowest)
 
 | Level | Operators | Associativity |
-|-------|-----------|---------------|
-| 1 | `( )` grouping | - |
-| 2 | unary `-` | right |
-| 3 | `*` `/` | left |
-| 4 | `+` `-` | left |
+|---|---|---|
+| 1 | Parentheses ( ) | Grouping |
+| 2 | Unary - | Right |
+| 3 | *, / | Left |
+| 4 | +, - | Left |
+| 5 | ==, !=, <, >, <=, >= | Follow parser implementation |
 
-## Not yet parsed
+## Supported Features
 
-`if`, `else`, `while`, `func`, `return`, `true`/`false`, comparison
-operators, `{ }` blocks and `,` are valid lexer tokens but are not part of
-this assignment's grammar. Using `if`, `else`, `while`, `func` or `return`
-as a statement gives the error "'...' statements are not supported by the
-parser yet".
+- Variable declaration using let
+- Variable reassignment and compound assignment
+- Numeric expressions and arithmetic operations
+- Parentheses and operator precedence
+- Print statements
+- Comparison operators
+- if / else conditional statements
+- while loops
+- Runtime errors for undefined variables and division by zero
+
+## Not Yet Implemented
+
+Function declarations and return statements are recognized by the lexer but are not implemented as executable statements in the current interpreter.
+
+**Important:** This is a proposed updated grammar. Before submitting, we should verify that it matches the exact parser behavior—particularly whether chained comparisons are accepted and how comparison expressions are evaluated.

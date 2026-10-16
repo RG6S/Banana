@@ -1,23 +1,87 @@
+﻿Banana Part 4 - Sample Program Test Results
 
-Spreadsheet runtime warmup failed during python startup
-Traceback (most recent call last):
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py", line 32317, in hydrate_crdt_from_proto
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py", line 749, in __call__
-  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py", line 150, in call
-artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.
-test_arithmetic_expression (test_lexer.TestBananaLexer.test_arithmetic_expression) ... ok
-test_control_structure (test_lexer.TestBananaLexer.test_control_structure) ... ok
-test_function_and_return (test_lexer.TestBananaLexer.test_function_and_return) ... ok
-test_invalid_input (test_lexer.TestBananaLexer.test_invalid_input) ... ok
-test_print_statement (test_lexer.TestBananaLexer.test_print_statement) ... ok
-test_variable_declaration (test_lexer.TestBananaLexer.test_variable_declaration) ... ok
-test_while_and_compound_assignment (test_lexer.TestBananaLexer.test_while_and_compound_assignment) ... ok
+Program 1: test1.banana
+Feature: Variables and arithmetic
+Expected output:
+15
+50
+5
+Actual output:
+15
+50
+5
+Result: PASS
 
-----------------------------------------------------------------------
-Ran 7 tests in 0.009s
+Program 2: test2.banana
+Feature: IF/ELSE
+Expected output:
+1
+Actual output:
+1
+Result: PASS
 
-OK
+Program 3: test3.banana
+Feature: WHILE loop
+Expected output:
+1
+2
+3
+4
+5
+Actual output:
+1
+2
+3
+4
+5
+Result: PASS
+
+Program 4: test4.banana
+Feature: Compound assignment
+Expected output:
+15
+12
+24
+6.0
+Actual output:
+15
+12
+24
+6.0
+Result: PASS
+
+Program 5: test5.banana
+Feature: Comparison operators
+Expected output:
+True
+True
+True
+True
+True
+True
+Actual output:
+True
+True
+True
+True
+True
+True
+Result: PASS
+
+Program 6: test6.banana
+Feature: Division by zero
+Expected output:
+Runtime error: Division by zero
+Actual output:
+Runtime error: Division by zero
+Result: PASS
+
+Program 7: test7.banana
+Feature: Undefined variable
+Expected output:
+Runtime error: Undefined variable 'x'
+Actual output:
+Runtime error: Undefined variable 'x'
+Result: PASS
+
+Summary: All seven sample programs produced the expected output.
