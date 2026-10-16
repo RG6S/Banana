@@ -1,4 +1,5 @@
-"""Interpreter for the Banana programming language (Part 4)."""
+
+"""Interpreter for the Banana programming language."""
 
 import sys
 from pathlib import Path
@@ -17,7 +18,7 @@ from ast_nodes import (
 
 
 class RuntimeErrorBanana(Exception):
-    """Raised when a Banana program has a runtime error."""
+    """Error raised when a Banana program fails during execution."""
 
 
 class Interpreter:
@@ -26,7 +27,7 @@ class Interpreter:
         self.output = []
 
     def execute(self, node):
-        """Execute a statement or program."""
+        """Execute a statement or program node."""
 
         if isinstance(node, ProgramNode):
             for statement in node.statements:
@@ -37,8 +38,9 @@ class Interpreter:
 
         elif isinstance(node, PrintNode):
             value = self.evaluate(node.expression)
-            self.output.append(str(value))
-            print(value)
+            text = str(value)
+            print(text)
+            self.output.append(text)
 
         elif isinstance(node, IfNode):
             if self.evaluate(node.condition):
@@ -59,8 +61,11 @@ class Interpreter:
             )
 
     def execute_assignment(self, node):
+        """Execute declarations, assignments, and compound assignments."""
+
         name = node.name
         operator = node.operator
+        value = self.evaluate(node.value)
 
         if node.is_declaration:
             if name in self.environment:
@@ -68,7 +73,7 @@ class Interpreter:
                     f"Variable '{name}' is already declared"
                 )
 
-            self.environment[name] = self.evaluate(node.value)
+            self.environment[name] = value
             return
 
         if name not in self.environment:
@@ -76,23 +81,26 @@ class Interpreter:
                 f"Undefined variable '{name}'"
             )
 
-        value = self.evaluate(node.value)
-
         if operator == "=":
             self.environment[name] = value
+
         elif operator == "+=":
             self.environment[name] += value
+
         elif operator == "-=":
             self.environment[name] -= value
+
         elif operator == "*=":
             self.environment[name] *= value
+
         elif operator == "/=":
             if value == 0:
                 raise RuntimeErrorBanana("Division by zero")
             self.environment[name] /= value
+
         else:
             raise RuntimeErrorBanana(
-                f"Unsupported assignment operator '{operator}'"
+                f"Invalid assignment operator '{operator}'"
             )
 
     def evaluate(self, node):
@@ -106,6 +114,7 @@ class Interpreter:
                 raise RuntimeErrorBanana(
                     f"Undefined variable '{node.name}'"
                 )
+
             return self.environment[node.name]
 
         if isinstance(node, UnaryOpNode):
@@ -114,44 +123,61 @@ class Interpreter:
             if node.operator == "-":
                 return -value
 
+            if node.operator == "+":
+                return value
+
             raise RuntimeErrorBanana(
-                f"Unsupported unary operator '{node.operator}'"
+                f"Invalid unary operator '{node.operator}'"
             )
 
         if isinstance(node, BinaryOpNode):
-            left = self.evaluate(node.left)
-            right = self.evaluate(node.right)
-            operator = node.operator
-
-            if operator == "+":
-                return left + right
-            elif operator == "-":
-                return left - right
-            elif operator == "*":
-                return left * right
-            elif operator == "/":
-                if right == 0:
-                    raise RuntimeErrorBanana("Division by zero")
-                return left / right
-            elif operator == "==":
-                return left == right
-            elif operator == "!=":
-                return left != right
-            elif operator == "<":
-                return left < right
-            elif operator == ">":
-                return left > right
-            elif operator == "<=":
-                return left <= right
-            elif operator == ">=":
-                return left >= right
-
-            raise RuntimeErrorBanana(
-                f"Unsupported operator '{operator}'"
-            )
+            return self.evaluate_binary(node)
 
         raise RuntimeErrorBanana(
             f"Unsupported expression: {type(node).__name__}"
+        )
+
+    def evaluate_binary(self, node):
+        """Evaluate arithmetic and comparison expressions."""
+
+        operator = node.operator
+        left = self.evaluate(node.left)
+        right = self.evaluate(node.right)
+
+        if operator == "+":
+            return left + right
+
+        if operator == "-":
+            return left - right
+
+        if operator == "*":
+            return left * right
+
+        if operator == "/":
+            if right == 0:
+                raise RuntimeErrorBanana("Division by zero")
+            return left / right
+
+        if operator == "==":
+            return left == right
+
+        if operator == "!=":
+            return left != right
+
+        if operator == "<":
+            return left < right
+
+        if operator == ">":
+            return left > right
+
+        if operator == "<=":
+            return left <= right
+
+        if operator == ">=":
+            return left >= right
+
+        raise RuntimeErrorBanana(
+            f"Invalid operator '{operator}'"
         )
 
 
@@ -159,6 +185,7 @@ def run(source):
     """Parse and execute Banana source code."""
 
     part3_path = str(Path(__file__).parent / "part3")
+
     if part3_path not in sys.path:
         sys.path.insert(0, part3_path)
 
@@ -172,6 +199,8 @@ def run(source):
 
 
 def main():
+    """Run a Banana source file from the command line."""
+
     if len(sys.argv) != 2:
         print("Usage: python interpreter.py <source_file>")
         return 1
@@ -193,9 +222,18 @@ def main():
         print(f"File error: {error}")
         return 1
 
-    except SyntaxError as error:
-        print(f"Syntax error: {error}")
-        return 1
+    except Exception as error:
+        error_name = type(error).__name__
+
+        if error_name == "LexerError":
+            print(f"Lexical error: {error}")
+            return 1
+
+        if error_name in ("ParserError", "SyntaxError"):
+            print(f"Syntax error: {error}")
+            return 1
+
+        raise
 
 
 if __name__ == "__main__":
