@@ -46,7 +46,7 @@ primary       = NUMBER
 ## Supported Features
 
 - Variable declaration using let
-- Variable reassignment and compound assignment
+- Variable reassignment and compoundd assignment
 - Numeric expressions and arithmetic operations
 - Parentheses and operator precedence
 - Print statements
