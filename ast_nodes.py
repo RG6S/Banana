@@ -188,7 +188,7 @@ def to_sexpr(node: Node) -> str:
         )
 
     if isinstance(node, WhileNode):
-        body = " ".join(to_sexpr(s) for s in node.body)
+        body = " ".join(to_sexpr(s) for s in node.body)        
         return f"(while {to_sexpr(node.condition)} (body {body}))"
 
     if isinstance(node, ProgramNode):
