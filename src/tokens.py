@@ -5,7 +5,7 @@ from lexer import Token
 # Keywords:
 # LET PRINT IF ELSE WHILE FUNC RETURN TRUE FALSE
 #
-# Identifiers and literals:
+# Identifiers and literals :
 # ID NUMBER
 #
 # Arithmetic:
@@ -24,4 +24,4 @@ from lexer import Token
 # EOF
 #
 # The Token dataclass is defined in lexer.py and stores:
-# type, lexeme, line, and column.
+# type, lexeme, line, and column. 
