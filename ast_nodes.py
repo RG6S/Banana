@@ -253,6 +253,26 @@ def to_sexpr(node: Node) -> str:
         body = " ".join(to_sexpr(s) for s in node.body)
         return f"(while {to_sexpr(node.condition)} (body {body}))"
 
+    if isinstance(node, FunctionDefNode):
+        parameters = " ".join(node.parameters)
+        body = " ".join(to_sexpr(s) for s in node.body)
+        return f"(function {node.name} ({parameters}) (body {body}))"
+
+    if isinstance(node, FunctionCallNode):
+        arguments = " ".join(to_sexpr(arg) for arg in node.arguments)
+        return f"(call {node.name} ({arguments}))"
+
+    if isinstance(node, ReturnNode):
+        return f"(return {to_sexpr(node.expression)})"
+
+    if isinstance(node, ForNode):
+        body = " ".join(to_sexpr(s) for s in node.body)
+        return (
+            f"(for {to_sexpr(node.initializer)} "
+            f"{to_sexpr(node.condition)} {to_sexpr(node.increment)} "
+            f"(body {body}))"
+        )
+
     if isinstance(node, ProgramNode):
         statements = " ".join(to_sexpr(s) for s in node.statements)
         return f"(program {statements})"

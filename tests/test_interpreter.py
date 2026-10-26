@@ -204,5 +204,24 @@ class TestBananaInterpreter(unittest.TestCase):
         self.assertEqual(output, ["120"])
 
 
+    def test_functions_cannot_access_caller_locals(self):
+        source = """
+        function inner() {
+            print(secret);
+        }
+
+        function outer() {
+            let secret = 99;
+            inner();
+        }
+
+        outer();
+        """
+        with self.assertRaisesRegex(
+            RuntimeErrorBanana, "Undefined variable 'secret'"
+        ):
+            run(source)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -41,10 +41,16 @@ class Interpreter:
         self.output = []
 
     def find_variable_scope(self, name):
-        """Find the nearest scope containing a variable."""
-        for scope in reversed(self.scopes):
-            if name in scope:
-                return scope
+        """Find a variable in the current function scope or global scope."""
+        current_scope = self.scopes[-1]
+
+        if name in current_scope:
+            return current_scope
+
+        # Functions can access global variables, but not caller-local variables.
+        if len(self.scopes) > 1 and name in self.environment:
+            return self.environment
+
         return None
 
     def execute(self, node):
