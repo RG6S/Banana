@@ -120,6 +120,68 @@ class WhileNode(Node):
 
 
 @dataclass(frozen=True)
+class FunctionDefNode(Node):
+    """A function definition with parameters and a body."""
+
+    name: str
+    parameters: List[str]
+    body: List[Node]
+
+    def label(self) -> str:
+        return f"FunctionDefNode({self.name})"
+
+    def children(self) -> List[Node]:
+        return [ProgramNode(self.body)]
+
+
+@dataclass(frozen=True)
+class FunctionCallNode(Node):
+    """A function call with arguments."""
+
+    name: str
+    arguments: List[Node]
+
+    def label(self) -> str:
+        return f"FunctionCallNode({self.name})"
+
+    def children(self) -> List[Node]:
+        return list(self.arguments)
+
+
+@dataclass(frozen=True)
+class ReturnNode(Node):
+    """Return a value from a function."""
+
+    expression: Node
+
+    def label(self) -> str:
+        return "ReturnNode"
+
+    def children(self) -> List[Node]:
+        return [self.expression]
+
+
+@dataclass(frozen=True)
+class ForNode(Node):
+    """A for loop with initialization, condition, increment, and body."""
+
+    initializer: Node
+    condition: Node
+    increment: Node
+    body: List[Node]
+
+    def label(self) -> str:
+        return "ForNode"
+
+    def children(self) -> List[Node]:
+        return [
+            self.initializer,
+            self.condition,
+            self.increment,
+            ProgramNode(self.body),
+        ]
+
+@dataclass(frozen=True)
 class ProgramNode(Node):
     statements: List[Node]
 

@@ -1,0 +1,16 @@
+function add(a, b) {
+    return a + b;
+}
+
+let result = add(10, 20);
+print(result);
+
+let x = 10;
+
+function test() {
+    let x = 20;
+    print(x);
+}
+
+test();
+print(x);

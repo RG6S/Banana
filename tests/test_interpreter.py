@@ -108,5 +108,101 @@ class TestBananaInterpreter(unittest.TestCase):
             run("print x;")
 
 
+    def test_function_parameters_and_return_value(self):
+        source = """
+        function multiply(a, b) {
+            return a * b;
+        }
+        print(multiply(6, 7));
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["42"])
+
+    def test_function_without_parameters(self):
+        source = """
+        function getTen() {
+            return 10;
+        }
+        print(getTen());
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["10"])
+
+    def test_local_and_global_scope(self):
+        source = """
+        let count = 100;
+        function show() {
+            let count = 5;
+            print(count);
+        }
+        show();
+        print(count);
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["5", "100"])
+
+    def test_nested_function_calls(self):
+        source = """
+        function add(a, b) {
+            return a + b;
+        }
+        function double(n) {
+            return n * 2;
+        }
+        print(double(add(2, 3)));
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["10"])
+
+    def test_for_loop_sum(self):
+        source = """
+        let total = 0;
+        for (let i = 1; i <= 4; i += 1) {
+            total += i;
+        }
+        print(total);
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["10"])
+
+    def test_undefined_function(self):
+        with self.assertRaisesRegex(
+            RuntimeErrorBanana, "Undefined function 'missing'"
+        ):
+            run("print missing(1);")
+
+    def test_function_wrong_argument_count(self):
+        source = """
+        function add(a, b) {
+            return a + b;
+        }
+        print(add(1));
+        """
+        with self.assertRaisesRegex(
+            RuntimeErrorBanana, "expects 2 argument"
+        ):
+            run(source)
+
+    def test_return_outside_function(self):
+        with self.assertRaisesRegex(
+            RuntimeErrorBanana, "outside a function"
+        ):
+            run("return 5;")
+
+    def test_recursive_function(self):
+        source = """
+        function factorial(n) {
+            if n <= 1 {
+                return 1;
+            } else {
+                return n * factorial(n - 1);
+            }
+        }
+        print(factorial(5));
+        """
+        output, _ = self.run_program(source)
+        self.assertEqual(output, ["120"])
+
+
 if __name__ == "__main__":
     unittest.main()

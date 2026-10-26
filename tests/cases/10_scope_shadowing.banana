@@ -1,0 +1,7 @@
+let count = 100;
+function show() {
+    let count = 5;
+    print(count);
+}
+show();
+print(count);
