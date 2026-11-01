@@ -1,41 +1,62 @@
-﻿# Banana Grammar (Part 4)
+﻿# Banana Grammar (Part 5)
 
-This document describes the grammar implemented by the Banana Part 4 parser
-and interpreter. It is consistent with the main project grammar in `GRAMMAR.md`.
+This document describes the syntax supported by the Banana Part 5 parser
+and interpreter.
 
 ## EBNF Grammar
 
 Notation: `{ x }` means zero or more repetitions, `[ x ]` means optional,
 and `|` means a choice. Quoted text represents literal tokens.
 
-program        = { statement } , EOF ;
+program          = { statement } , EOF ;
 
-statement      = let_stmt
-               | assign_stmt
-               | print_stmt
-               | if_stmt
-               | while_stmt ;
+statement        = let_stmt
+                 | assign_stmt
+                 | print_stmt
+                 | if_stmt
+                 | while_stmt
+                 | function_def
+                 | return_stmt
+                 | for_stmt
+                 | function_call , ";" ;
 
-let_stmt       = "let" , ID , "=" , expression , ";" ;
-assign_stmt    = ID , assign_op , expression , ";" ;
-print_stmt     = "print" , expression , ";" ;
+let_stmt         = "let" , ID , "=" , expression , ";" ;
+assign_stmt      = ID , assign_op , expression , ";" ;
+print_stmt       = "print" , expression , ";" ;
+assign_op        = "=" | "+=" | "-=" | "*=" | "/=" ;
 
-assign_op      = "=" | "+=" | "-=" | "*=" | "/=" ;
+function_def     = ("function" | "func") , ID , "(" ,
+                   [ parameter_list ] , ")" , block ;
+parameter_list   = ID , { "," , ID } ;
 
-if_stmt        = "if" , expression , block , [ "else" , block ] ;
-while_stmt     = "while" , expression , block ;
-block          = "{" , { statement } , "}" ;
+return_stmt      = "return" , expression , ";" ;
 
-expression     = comparison ;
-comparison     = additive , [ comp_op , additive ] ;
-comp_op        = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
+function_call    = ID , "(" , [ argument_list ] , ")" ;
+argument_list    = expression , { "," , expression } ;
 
-additive       = term , { ( "+" | "-" ) , term } ;
-term           = unary , { ( "*" | "/" ) , unary } ;
-unary          = "-" , unary | primary ;
-primary        = NUMBER
-               | ID
-               | "(" , expression , ")" ;
+if_stmt          = "if" , expression , block ,
+                   [ "else" , block ] ;
+while_stmt       = "while" , expression , block ;
+
+for_stmt         = "for" , "(" , for_initializer , ";" ,
+                   expression , ";" , assign_core , ")" , block ;
+for_initializer  = let_core | assign_core ;
+let_core         = "let" , ID , "=" , expression ;
+assign_core      = ID , assign_op , expression ;
+
+block            = "{" , { statement } , "}" ;
+
+expression       = comparison ;
+comparison       = additive , [ comp_op , additive ] ;
+comp_op          = "==" | "!=" | "<" | ">" | "<=" | ">=" ;
+
+additive         = term , { ("+" | "-") , term } ;
+term             = unary , { ("*" | "/") , unary } ;
+unary            = "-" , unary | primary ;
+primary          = NUMBER
+                 | ID
+                 | function_call
+                 | "(" , expression , ")" ;
 
 ## Operator Precedence
 
@@ -47,30 +68,33 @@ From highest to lowest:
 4. Addition and subtraction
 5. Comparison operators
 
-Arithmetic operators follow the parser's associativity rules. Comparisons are
-non-associative: an expression may contain only one comparison operator unless
-parentheses are used to form separate expressions.
+Multiplication, division, addition, and subtraction are left-associative.
+Chained comparisons are not supported.
 
-## Supported Features
+## Functions and Scope
 
-- Integer numeric literals; division can produce decimal results.
-- Variable declarations using `let`.
-- Variable reassignment and compound assignments.
-- Arithmetic operations: `+`, `-`, `*`, `/`.
-- Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`.
-- Print statements.
-- `if` and optional `else` blocks.
-- `while` loops.
-- Runtime errors for undefined variables and division by zero.
-- Lexical and syntax errors with line and column information.
+Function definitions use `function` or the existing alias `func`.
+Parameters are separated by commas. Calls provide matching arguments,
+and `return` returns an expression value.
 
-## Current Limitations
+Each function call receives a local environment for its parameters and
+local declarations. Variable lookup searches the current local environment
+first, then outer environments, including the global environment. Assignment
+updates the nearest environment containing the assigned variable.
 
-Function declarations and return statements are not executable features in
-the current Part 4 parser and interpreter. Keywords such as `func` and
-`return` may be recognized by the lexer, but lexical recognition alone does
-not mean the language supports executing functions.
+Function definitions are stored by name. Functions must be defined before
+they are called during program execution. Recursion is supported.
 
-Boolean values can result from comparison expressions. Boolean literals such
-as `true` and `false` are not included in the primary-expression grammar above.
+## Extension Feature: for Loops
+
+A `for` loop has an initializer, condition, increment assignment, and body.
+The initializer supports a `let` declaration or an assignment. The increment
+supports assignment or compound assignment.
+
+Example:
+
+```text
+for (let i = 1; i <= 5; i += 1) {
+    print i;
+}
 
