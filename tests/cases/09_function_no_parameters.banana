@@ -1,0 +1,4 @@
+function getTen() {
+    return 10;
+}
+print(getTen());
