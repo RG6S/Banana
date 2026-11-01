@@ -8,12 +8,13 @@ KEYWORDS = {
     "if": "IF",
     "else": "ELSE",
     "while": "WHILE",
+    "function": "FUNC",
     "func": "FUNC",
     "return": "RETURN",
+    "for": "FOR",
     "true": "TRUE",
     "false": "FALSE",
 }
-
 TWO_CHAR_OPERATORS = {
     "==": "EQ",
     "!=": "NE",
