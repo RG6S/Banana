@@ -120,6 +120,68 @@ class WhileNode(Node):
 
 
 @dataclass(frozen=True)
+class FunctionDefNode(Node):
+    """A function definition with parameters and a body."""
+
+    name: str
+    parameters: List[str]
+    body: List[Node]
+
+    def label(self) -> str:
+        return f"FunctionDefNode({self.name})"
+
+    def children(self) -> List[Node]:
+        return [ProgramNode(self.body)]
+
+
+@dataclass(frozen=True)
+class FunctionCallNode(Node):
+    """A function call with arguments."""
+
+    name: str
+    arguments: List[Node]
+
+    def label(self) -> str:
+        return f"FunctionCallNode({self.name})"
+
+    def children(self) -> List[Node]:
+        return list(self.arguments)
+
+
+@dataclass(frozen=True)
+class ReturnNode(Node):
+    """Return a value from a function."""
+
+    expression: Node
+
+    def label(self) -> str:
+        return "ReturnNode"
+
+    def children(self) -> List[Node]:
+        return [self.expression]
+
+
+@dataclass(frozen=True)
+class ForNode(Node):
+    """A for loop with initialization, condition, increment, and body."""
+
+    initializer: Node
+    condition: Node
+    increment: Node
+    body: List[Node]
+
+    def label(self) -> str:
+        return "ForNode"
+
+    def children(self) -> List[Node]:
+        return [
+            self.initializer,
+            self.condition,
+            self.increment,
+            ProgramNode(self.body),
+        ]
+
+@dataclass(frozen=True)
 class ProgramNode(Node):
     statements: List[Node]
 
@@ -188,8 +250,28 @@ def to_sexpr(node: Node) -> str:
         )
 
     if isinstance(node, WhileNode):
-        body = " ".join(to_sexpr(s) for s in node.body)        
+        body = " ".join(to_sexpr(s) for s in node.body)
         return f"(while {to_sexpr(node.condition)} (body {body}))"
+
+    if isinstance(node, FunctionDefNode):
+        parameters = " ".join(node.parameters)
+        body = " ".join(to_sexpr(s) for s in node.body)
+        return f"(function {node.name} ({parameters}) (body {body}))"
+
+    if isinstance(node, FunctionCallNode):
+        arguments = " ".join(to_sexpr(arg) for arg in node.arguments)
+        return f"(call {node.name} ({arguments}))"
+
+    if isinstance(node, ReturnNode):
+        return f"(return {to_sexpr(node.expression)})"
+
+    if isinstance(node, ForNode):
+        body = " ".join(to_sexpr(s) for s in node.body)
+        return (
+            f"(for {to_sexpr(node.initializer)} "
+            f"{to_sexpr(node.condition)} {to_sexpr(node.increment)} "
+            f"(body {body}))"
+        )
 
     if isinstance(node, ProgramNode):
         statements = " ".join(to_sexpr(s) for s in node.statements)
