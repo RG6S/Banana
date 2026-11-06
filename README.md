@@ -46,7 +46,7 @@ print 0;
 
 1. Nabin Shrestha
 2. Nishan Thapa
-3. Achyut Kumar Kurakula
+3. Achyuth Kumar Kurakula
 
 ## Project Structure
 
