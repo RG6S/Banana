@@ -45,9 +45,9 @@ print 0;
 ## Group Members
 
 1. Nabin Shrestha
-2. Rajiv Gautam
+2. Achyuth Kumar Kurakula
 3. Nishan Thapa
-
+   
 ## Project Structure
 
 1. src/ - Lexer source files
