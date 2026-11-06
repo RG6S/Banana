@@ -45,8 +45,8 @@ print 0;
 ## Group Members
 
 1. Nabin Shrestha
-2. Rajiv Gautam
-3. Nishan Thapa
+2. Nishan Thapa
+3. Achyut Kumar Kurakula
 
 ## Project Structure
 
