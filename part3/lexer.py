@@ -8,6 +8,7 @@ KEYWORDS = {
     "if": "IF",
     "else": "ELSE",
     "while": "WHILE",
+    "for": "FOR",
     "func": "FUNC",
     "return": "RETURN",
     "true": "TRUE",

@@ -1,4 +1,4 @@
-function getTen() {
+func getTen() {
     return 10;
 }
 print(getTen());

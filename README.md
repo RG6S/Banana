@@ -1,102 +1,99 @@
 # Banana Programming Language
 
-Banana is a simple C-style programming language that our group is designing and developing for our programming languages course project. The goal of Banana is to create a small and easy-to-understand programming language that supports common programming concepts while remaining simple enough to implement within the project timeline.
+Banana is a simple C-style programming language designed and developed by our group for our Programming Languages course project. Its goal is to support common programming concepts while remaining small enough to understand and implement.
 
 ## Features
 
-* Variable declaration using let
-* Numeric values
-* Arithmetic operations: +, -, \*, /
-* Comparison operators: ==, !=, <, >, <=, >=
-* Parentheses and operator precedence
-* print statements
-* if / else statements
-* while loops
-* Compound assignments: +=, -=, \*=, /=
-* Error handling for undefined variables and division by zero
-* Function definitions, parameters, and function calls
-* Return values and recursion
-* Local and global variable scope
-* for loops
-
-
+- Variable declarations using `let`
+- Numeric values
+- Arithmetic operations: `+`, `-`, `*`, `/`
+- Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Parentheses and operator precedence
+- Print statements
+- `if` / `else` statements
+- `while` loops
+- `for` loops
+- Compound assignments: `+=`, `-=`, `*=`, `/=`
+- Function definitions, parameters, and function calls
+- Return values and recursion
+- Local and global variable scope
+- Runtime error handling for undefined variables and division by zero
+- Lexical error handling for invalid characters
 
 ## Current Limitations
 
-* Numeric literals are integers; division can produce decimal results.
-* The interpreter reports runtime errors for undefined variables and division by zero.
-* Numeric literals are integers; division can produce decimal results.
-* Boolean literals such as `true` and `false` are not yet supported as expressions.
-* A function without an explicit return statement produces None.
-
-
+- Numeric literals are integers, although division can produce decimal results.
+- Boolean literals such as `true` and `false` are not supported as expressions.
+- A function without an explicit return statement produces `None`.
 
 ## Example
 
+```banana
 let x = 10;
 let y = 20;
 
 if (x < y) {
-print x + y;
+    print(x + y);
 } else {
-print 0;
+    print(0);
 }
+```
 
 ## Group Members
 
 1. Nabin Shrestha
 2. Achyuth Kumar Kurakula
 3. Nishan Thapa
-   
+
 ## Project Structure
 
-1. src/ - Lexer source files
-2. part3/ - Parser and parser tests
-3. tests/ - Automated tests
-4. outputs/ - Sample programs and test files
-5. ast\_nodes.py - Abstract syntax tree definitions
-6. interpreter.py - Runs Banana programs
-7. GRAMMAR.md - Banana language grammar
-8. Language-Design.md - Language design documentation
-9. docs/ - Project documentation
+- `interpreter.py` - Runs Banana programs and handles interpretation.
+- `ast_nodes.py` - Abstract syntax tree definitions.
+- `part3/lexer.py` - Active lexer used by the parser and interpreter.
+- `part3/banana_parser.py` - Banana parser.
+- `part3/` - Parser tests and related files.
+- `src/` - Additional lexer and token source files.
+- `tests/` - Automated interpreter and lexer tests, including sample Banana programs.
+- `outputs/` - Additional sample programs and output examples.
+- `GRAMMAR.md` - Banana language grammar.
+- `Language-Design.md` - Language design documentation.
+- `docs/` - Project documentation.
 
 ## How to Run
 
-Run a Banana program from the project folder:
+From the project folder, run:
 
-python .\\interpreter.py .\\outputs\\test1.banana
+```powershell
+python .\interpreter.py .\outputs\test1.banana
+```
+
+Replace `test1.banana` with the Banana program you want to execute.
 
 ## How to Run Tests
 
 Run the interpreter and lexer tests:
 
-
-
 ```powershell
-
 python -m unittest discover -s tests -v
-
 ```
-
-
 
 Run the parser tests:
 
-
-
 ```powershell
-
 python -m unittest discover -s part3 -v
-
 ```
 
+## Latest Test Results
 
+The latest unit test runs completed successfully:
 
-\### Latest Test Results
+- Interpreter and lexer tests: 24 passed
+- Parser tests: 22 passed
+- Total: 46 passed
 
+Additionally, 12 Banana programs in `tests/cases/` were executed through the interpreter. These covered variable declarations, arithmetic, printing, conditionals, lexical errors, loops, functions, parameters, scope, nested function calls, and for loops. The invalid-input program intentionally produced a lexical error.
 
-
-During Part 5 development, all 23 interpreter and lexer tests and all 22 parser tests passed, for a total of 45 passing tests.
+Additional runtime error examples are available in the `outputs/` directory.
 
 ## Language Design
 
