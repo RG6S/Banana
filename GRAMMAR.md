@@ -1,6 +1,6 @@
-# Banana Grammar (Part 5)
+# Banana Grammar (Final Version)
 
-This document describes the syntax supported by the Banana Part 5 parser
+This document describes the syntax supported by the Banana final parser
 and interpreter.
 
 ## EBNF Grammar
@@ -25,7 +25,7 @@ assign_stmt      = ID , assign_op , expression , ";" ;
 print_stmt       = "print" , expression , ";" ;
 assign_op        = "=" | "+=" | "-=" | "*=" | "/=" ;
 
-function_def     = ("function" | "func") , ID , "(" ,
+function_def     = "func" , ID , "(" ,
                    [ parameter_list ] , ")" , block ;
 parameter_list   = ID , { "," , ID } ;
 
@@ -58,6 +58,10 @@ primary          = NUMBER
                  | function_call
                  | "(" , expression , ")" ;
 
+## Control Flow
+
+Parentheses around `if` and `while` conditions are optional.
+The `for`-loop header requires parentheses.
 ## Operator Precedence
 
 From highest to lowest:
@@ -73,14 +77,16 @@ Chained comparisons are not supported.
 
 ## Functions and Scope
 
-Function definitions use `function` or the existing alias `func`.
-Parameters are separated by commas. Calls provide matching arguments,
+Function definitions use the keyword `func`.
+Parameters are separated by commas. Function calls provide matching arguments,
 and `return` returns an expression value.
 
 Each function call receives a local environment for its parameters and
-local declarations. Variable lookup searches the current local environment
-first, then outer environments, including the global environment. Assignment
-updates the nearest environment containing the assigned variable.
+local declarations. Variable lookup searches the current function local
+environment first, then the global environment. Functions cannot access
+local variables belonging to the caller or another function. Assignment
+updates an existing variable in the current local environment or global
+environment.
 
 Function definitions are stored by name. Functions must be defined before
 they are called during program execution. Recursion is supported.
@@ -97,3 +103,5 @@ Example:
 for (let i = 1; i <= 5; i += 1) {
     print i;
 }
+```
+
