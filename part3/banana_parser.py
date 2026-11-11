@@ -1,16 +1,20 @@
 
-"""Recursive-descent parser for Banana Part 4."""
+"""Recursive-descent parser for Banana Part 5."""
 
 from typing import List
 
 from ast_nodes import (
     AssignmentNode,
     BinaryOpNode,
+    ForNode,
+    FunctionCallNode,
+    FunctionDefNode,
     IfNode,
     Node,
     NumberNode,
     PrintNode,
     ProgramNode,
+    ReturnNode,
     UnaryOpNode,
     VariableNode,
     WhileNode,
@@ -57,6 +61,9 @@ class Parser:
     def peek(self) -> Token:
         return self.tokens[self.pos]
 
+    def peek_next(self) -> Token:
+        return self.tokens[min(self.pos + 1, len(self.tokens) - 1)]
+
     def check(self, *types: str) -> bool:
         return self.peek().type in types
 
@@ -93,6 +100,10 @@ class Parser:
             return self.print_statement()
 
         if token.type == "ID":
+            if self.peek_next().type == "LPAREN":
+                call = self.function_call()
+                self.expect("SEMICOLON", "';' after the function call")
+                return call
             return self.assignment_statement()
 
         if token.type == "IF":
@@ -101,7 +112,16 @@ class Parser:
         if token.type == "WHILE":
             return self.while_statement()
 
-        if token.type in {"ELSE", "FUNC", "RETURN"}:
+        if token.type == "FUNC":
+            return self.function_definition()
+
+        if token.type == "RETURN":
+            return self.return_statement()
+
+        if token.type == "FOR":
+            return self.for_statement()
+
+        if token.type in {"ELSE"}:
             raise ParserError(
                 f"'{token.lexeme}' is not supported here",
                 token,
@@ -114,10 +134,14 @@ class Parser:
 
     def let_statement(self) -> AssignmentNode:
         self.advance()
+        node = self.declaration_core()
+        self.expect("SEMICOLON", "';' at the end of the statement")
+        return node
+
+    def declaration_core(self) -> AssignmentNode:
         name = self.expect("ID", "a variable name after 'let'")
         self.expect("ASSIGN", "'=' after the variable name")
         value = self.expression()
-        self.expect("SEMICOLON", "';' at the end of the statement")
 
         return AssignmentNode(
             name.lexeme,
@@ -127,7 +151,12 @@ class Parser:
         )
 
     def assignment_statement(self) -> AssignmentNode:
-        name = self.advance()
+        node = self.assignment_core()
+        self.expect("SEMICOLON", "';' at the end of the statement")
+        return node
+
+    def assignment_core(self) -> AssignmentNode:
+        name = self.expect("ID", "a variable name")
 
         if not self.check(*ASSIGN_OPERATORS):
             raise ParserError(
@@ -138,7 +167,6 @@ class Parser:
 
         operator = self.advance()
         value = self.expression()
-        self.expect("SEMICOLON", "';' at the end of the statement")
 
         return AssignmentNode(name.lexeme, operator.lexeme, value)
 
@@ -165,6 +193,86 @@ class Parser:
         condition = self.expression()
         body = self.block()
         return WhileNode(condition, body)
+
+    def function_definition(self) -> FunctionDefNode:
+        self.advance()
+        name = self.expect("ID", "a function name")
+        self.expect("LPAREN", "'(' after the function name")
+
+        parameters = []
+
+        if not self.check("RPAREN"):
+            parameters.append(
+                self.expect("ID", "a parameter name").lexeme
+            )
+
+            while self.check("COMMA"):
+                self.advance()
+                parameters.append(
+                    self.expect("ID", "a parameter name").lexeme
+                )
+
+        if len(parameters) != len(set(parameters)):
+            raise ParserError(
+                "duplicate parameter name",
+                self.peek(),
+            )
+
+        self.expect("RPAREN", "')' after the parameters")
+        body = self.block()
+
+        return FunctionDefNode(name.lexeme, parameters, body)
+
+    def function_call(self) -> FunctionCallNode:
+        name = self.expect("ID", "a function name")
+        self.expect("LPAREN", "'(' after the function name")
+
+        arguments = []
+
+        if not self.check("RPAREN"):
+            arguments.append(self.expression())
+
+            while self.check("COMMA"):
+                self.advance()
+                arguments.append(self.expression())
+
+        self.expect("RPAREN", "')' after the arguments")
+
+        return FunctionCallNode(name.lexeme, arguments)
+
+    def return_statement(self) -> ReturnNode:
+        self.advance()
+        value = self.expression()
+        self.expect("SEMICOLON", "';' after the return value")
+        return ReturnNode(value)
+
+    def for_statement(self) -> ForNode:
+        self.advance()
+        self.expect("LPAREN", "'(' after 'for'")
+
+        if self.check("LET"):
+            self.advance()
+            initializer = self.declaration_core()
+        elif self.check("ID"):
+            initializer = self.assignment_core()
+        else:
+            raise ParserError(
+                "expected a variable declaration or assignment "
+                "to initialize the for loop",
+                self.peek(),
+            )
+
+        self.expect("SEMICOLON", "';' after the for-loop initializer")
+
+        condition = self.expression()
+        self.expect("SEMICOLON", "';' after the for-loop condition")
+
+        increment = self.assignment_core()
+        self.expect("RPAREN", "')' after the for-loop increment")
+
+        body = self.block()
+
+        return ForNode(initializer, condition, increment, body)
 
     def block(self) -> List[Node]:
         self.expect("LBRACE", "'{' to begin a block")
@@ -242,6 +350,9 @@ class Parser:
             return NumberNode(int(token.lexeme))
 
         if token.type == "ID":
+            if self.peek_next().type == "LPAREN":
+                return self.function_call()
+
             self.advance()
             return VariableNode(token.lexeme)
 

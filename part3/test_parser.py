@@ -107,11 +107,9 @@ class SyntaxErrorTests(unittest.TestCase):
             parse("x;")
         self.assertIn("assignment operator", str(ctx.exception))
 
-    def test_unsupported_keyword_gives_clear_message(self):
-        with self.assertRaises(ParserError) as ctx:
-                    parse("func test() { }")
-
-        self.assertIn("not supported", str(ctx.exception))
+    def test_function_definition_is_supported(self):
+    	program = parse("func test() { }")
+    	self.assertEqual(len(program.statements), 1)
 
     def test_lexer_errors_still_propagate(self):
         with self.assertRaises(LexerError):
